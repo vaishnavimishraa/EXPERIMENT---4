@@ -1,0 +1,54 @@
+import pandas as pd
+import numpy as np
+from sklearn.impute import SimpleImputer
+
+# Import the dataset
+data = pd.read_csv('customer file.csv')
+
+# Select only numerical columns for imputation
+numerical_cols = data.select_dtypes(include='number').columns
+
+# Handling missing values using mean imputation for numerical columns
+imputer = SimpleImputer(strategy='mean')
+
+# Create a new DataFrame to avoid chained assignment warning
+data[numerical_cols] = pd.DataFrame(imputer.fit_transform(data[numerical_cols]), columns=numerical_cols)
+
+# Check if imputation worked correctly
+print("Missing values after imputation:")
+print(data.isnull().sum())
+Missing values after imputation:
+Index                0
+Customer Id          0
+First Name           0
+Last Name            0
+Company              0
+City                 0
+Country              0
+Phone 1              0
+Phone 2              0
+Email                0
+Subscription Date    0
+Website              0
+dtype: int64
+
+# Handling outliers using z-score method
+from scipy import stats
+
+# Calculate z-scores for numerical columns
+z_scores = np.abs(stats.zscore(data.select_dtypes(include='number')))
+
+# Setting a threshold for identifying outliers (z-score > 3)
+outliers = np.where(z_scores > 3)
+
+# Remove the outliers
+data_no_outliers = data[(z_scores < 3).all(axis=1)]
+
+# Remove the outliers
+data_no_outliers = data[(z_scores < 3).all(axis=1)]
+
+print(f"Data size after removing outliers: {data_no_outliers.shape}")
+Data size after removing outliers: (100, 12)
+
+# Export the preprocessed dataset
+data_no_outliers.to_csv('preprocessed_dataset.csv', index=False)
